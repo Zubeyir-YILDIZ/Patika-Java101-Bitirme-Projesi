@@ -1,36 +1,112 @@
 import java.util.Random;
 import java.util.Scanner;
-import java.util.Arrays;
 public class Main
 {
+    static Scanner input=new Scanner(System.in);
+    static Random rnd =new Random();
+    static int eksenY,eksenX,girilenY,girilenX,eylem=-3,sayacTarla=0;
+    static int mayinSayisi;
+    static String[][] mayin,mayinTarlasi;
+
     public static void main(String[] args)
     {
-        MineSweeper s1 =new MineSweeper();
+        mayinSayisi=(eksenY*eksenX)/4;
+        System.out.print("Satır sayısı: "); eksenY=input.nextInt();
+        System.out.print("Sütun sayısı: "); eksenX=input.nextInt();
+        mayinTarlasi=new String[eksenY][eksenX];
+        mayin=new String[eksenY][eksenX];
+        tarlaOlustur();
+        tarlaGoster(mayinTarlasi);
+        System.out.println("----------------------------------");
+        //tarlaGoster(mayin);    //mayınların konumları
+        while(true)
+        {
+            System.out.println("İşaretlenecek satır: "); girilenY=input.nextInt();
+            System.out.println("İşaretlenecek sütun: "); girilenX=input.nextInt();
+            System.out.println("Bayrak koymak için '-2',Açmak için '-3' tuşlayınız "); eylem=input.nextInt();
+
+            if(girilenY<eksenY && girilenX<eksenX)
+            {
+                if(eylem==-3 || eylem==-2)
+                {
+                    if(eylem==-2)
+                    {
+                        if(!mayinTarlasi[girilenY][girilenX].equals("^|"))
+                        {
+                            mayinTarlasi[girilenY][girilenX]="^|";
+                            tarlaGoster(mayinTarlasi);
+                            sayacTarla--;
+                        }
+                        else
+                            tarlaGoster(mayinTarlasi);
+                    }
+                    if(eylem==-3)
+                    {
+                        if(mayinTarlasi[girilenY][girilenX].equals("-")||mayinTarlasi[girilenY][girilenX].equals("^|"))
+                        {
+                            if(mayin[girilenY][girilenX].equals("*"))
+                            {
+                                System.out.println("Patladın! ");
+                                tarlaGoster(mayinTarlasi);
+                                System.out.println("------------");
+                                tarlaGoster(mayin);
+                                break;
+                            }
+                            else
+                            {
+                                mayinTarlasi[girilenY][girilenX]=mayinKontrol(mayin);
+                                tarlaGoster(mayinTarlasi);
+                                sayacTarla--;
+                            }
+                        }
+                        else
+                            tarlaGoster(mayinTarlasi);
+                    }
+                    if(sayacTarla<=0)
+                    {
+                        if(tarlaKontrol(mayinTarlasi)>mayinSayisi)
+                        {
+                            sayacTarla++;
+                        }
+                        else
+                        {
+                            System.out.println("Kazandınız!!");
+                            tarlaGoster(mayinTarlasi);
+                            break;
+                        }
+                    }
+                }
+                else
+                    System.out.println("Geçersiz Değer!");
+            }
+            else
+                System.out.println("Geçersiz aralık!");
+        }
     }
-}
-class MineSweeper
-{
-    Random rnd=new Random();
-    Scanner input=new Scanner(System.in);
-
-    public MineSweeper()
+    static int tarlaKontrol(String[][]tarla)
     {
-        int eksenX,eksenY;
-        int sayac,sayacTarla=0;
-        System.out.println("Satır sayısı: "); eksenY=input.nextInt();
-        System.out.println("Sütun sayısı: "); eksenX=input.nextInt();
-        int mayinSayisi=(eksenX*eksenY)/4;
-
-        String[][] mayinTarlasi =new String[eksenY][eksenX];
-        String[][] mayin =new String[eksenY][eksenX];
-        System.out.println(" Mayınların Konumu ");
-        sayac=mayinSayisi;
+        int sayac=0;
         for(int i=0;i<eksenY;i++)
         {
-
             for(int j=0;j<eksenX;j++)
             {
-                if(sayac>-1)
+                if(tarla[i][j].equals("-") || tarla[i][j].equals("^|"))
+                {
+                    sayac++;
+                }
+            }
+        }
+        return sayac;
+    }
+    static void tarlaOlustur()
+    {
+        mayinSayisi=(eksenY*eksenX)/4;
+        int sayac=mayinSayisi;
+        for(int i=0;i<eksenY;i++)
+        {
+            for(int j=0;j<eksenX;j++)
+            {
+                while(sayac>0)
                 {
                     int rastgeleY=rastgele(eksenY);
                     int rastgeleX=rastgele(eksenX);
@@ -50,175 +126,81 @@ class MineSweeper
                     mayin[i][j]="-";
                     sayacTarla+=1;
                 }
-
-                System.out.print(mayinTarlasi[i][j]+"  ");
-                // System.out.print(mayin[i][j]+"  "); //Mayınları Konumunu Bastıran Kod
-
             }
-            System.out.println();
         }
-
-        int cevreMayin=0;
-        int girilenSatir,girilenSutun;
-        boolean sol,sag,ust,alt,solUC,sagUC,solAC,sagAC;
-        int kontrol;
-
-        while (true)
-        {
-            System.out.println("Satır Değeri Giriniz: "); girilenSatir=input.nextInt();
-            System.out.println("Sütun Değeri Giriniz: "); girilenSutun=input.nextInt();
-            System.out.println("Bayrak Koymak İçin -2,Alanı Açmak İçin -3 Tuşlayınız"); kontrol=input.nextInt();
-
-            if(kontrol==-2)
-            {
-                sayacTarla--;
-                mayinTarlasi[girilenSatir][girilenSutun]="^|";
-
-                for(int i=0;i<eksenY;i++)
-                {
-                    for(int j=0;j<eksenX;j++)
-                    {
-                        System.out.print(mayinTarlasi[i][j]+"   ");
-                    }
-                    System.out.println();
-                }
-            }
-            if(kontrol==-3)
-            {
-                if(girilenSatir<=eksenY && girilenSutun<=eksenX && girilenSatir>=0 && girilenSutun>=0)
-                {
-                    if(sayacTarla>1)
-                    {
-                        if(!mayin[girilenSatir][girilenSutun].equals("*"))
-                        {
-                            cevreMayin=0;
-
-                            if(girilenSutun-1>=0 && girilenSutun-1<eksenX)
-                            {
-                                sol=mayin[girilenSatir][girilenSutun-1].equals("*");
-                                if(sol)
-                                    cevreMayin++;
-                            }
-
-                            if(girilenSutun+1>=0 && girilenSutun+1<eksenX)
-                            {
-                                sag=mayin[girilenSatir][girilenSutun+1].equals("*");
-                                if(sag)
-                                    cevreMayin++;
-                            }
-
-                            if(girilenSatir-1>=0 && girilenSatir-1<eksenY)
-                            {
-                                ust=mayin[girilenSatir-1][girilenSutun].equals("*");
-                                if(ust)
-                                    cevreMayin++;
-                            }
-
-                            if(girilenSatir+1>=0 && girilenSatir+1<eksenY)
-                            {
-                                alt=mayin[girilenSatir+1][girilenSutun].equals("*");
-                                if(alt)
-                                    cevreMayin++;
-                            }
-
-                            if(girilenSatir-1>=0 && girilenSutun-1>=0 && girilenSatir-1<eksenY && girilenSutun-1<eksenX)
-                            {
-                                solUC=mayin[girilenSatir-1][girilenSutun-1].equals("*");
-                                if(solUC)
-                                    cevreMayin++;
-                            }
-
-                            if(girilenSatir-1>=0 && girilenSutun+1>=0 && girilenSatir-1<eksenY && girilenSutun+1<eksenX)
-                            {
-                                sagUC=mayin[girilenSatir-1][girilenSutun+1].equals("*");
-                                if(sagUC)
-                                    cevreMayin++;
-                            }
-
-                            if(girilenSatir+1>=0 && girilenSutun-1>=0 && girilenSatir+1<eksenY && girilenSutun-1<eksenX)
-                            {
-                                solAC=mayin[girilenSatir+1][girilenSutun-1].equals("*");
-                                if(solAC)
-                                    cevreMayin++;
-                            }
-
-                            if(girilenSatir+1>=0 && girilenSutun+1>=0 && girilenSatir+1<eksenY && girilenSutun+1<eksenX)
-                            {
-                                sagAC=mayin[girilenSatir+1][girilenSutun+1].equals("*");
-                                if(sagAC)
-                                    cevreMayin++;
-                            }
-
-
-                            String cevreMayinS= String.valueOf(cevreMayin);
-                            sayacTarla--;
-                            mayinTarlasi[girilenSatir][girilenSutun]=cevreMayinS;
-
-                        }
-                        else
-                        {
-                            System.out.println("PATLADIN!");
-                            System.out.println("Mayın Tarlası ");
-                            for(int i=0;i<eksenY;i++)
-                            {
-                                for(int j=0;j<eksenX;j++)
-                                {
-                                    System.out.print(mayin[i][j]+"  ");
-                                }
-                                System.out.println();
-                            }
-                            break;
-                        }
-
-
-                    }
-                    else
-                    {
-                        System.out.println("KAZANDINIZ!");
-
-                        for(int i=0;i<eksenY;i++)
-                        {
-                            for(int j=0;j<eksenX;j++)
-                            {
-                                System.out.print(mayinTarlasi[i][j]+"   ");
-                            }
-                            System.out.println();
-                        }
-                        break;
-                    }
-
-                    for(int i=0;i<eksenY;i++)
-                    {
-                        for(int j=0;j<eksenX;j++)
-                        {
-                            System.out.print(mayinTarlasi[i][j]+"   ");
-                        }
-                        System.out.println();
-                    }
-
-                }
-                else
-                    System.out.println("Lütfen Geçerli Değerler Giriniz\nDizi Sınırları: "+eksenY+","+eksenX);
-
-            }
-            if(!(kontrol!=-2 || kontrol!=-3))
-            {
-                System.out.println("Geçersiz Değer!");
-            }
-
-        }
-
-
-
-
-
     }
-    public int rastgele(int a)
+    static int rastgele(int a)
     {
         return rnd.nextInt(0,a);
     }
+    static void tarlaGoster(String[][]tarla)
+    {
+        for(int i=0;i<eksenY;i++)
+        {
+            for(int j=0;j<eksenX;j++)
+            {
+                System.out.print(tarla[i][j]+"  ");
+            }
+            System.out.println();
+        }
+    }
+    static String mayinKontrol(String[][]tarla)
+    {
+        boolean sol,sag,ust,alt,solUC,sagUC,solAC,sagAC;
+        int cevreMayin=0;
 
+        if(girilenY-1>=0 && girilenY-1<eksenY)
+        {
+            ust=tarla[girilenY-1][girilenX].equals("*");
+            if(ust)
+                cevreMayin++;
+        }
+        if(girilenY+1>=0 && girilenY+1<eksenY)
+        {
+            alt = tarla[girilenY + 1][girilenX].equals("*");
+            if (alt)
+                cevreMayin++;
+        }
+        if(girilenX-1>=0 && girilenX-1<eksenX)
+        {
+            sol=tarla[girilenY][girilenX-1].equals("*");
+            if(sol)
+                cevreMayin++;
+        }
 
+        if(girilenX+1>=0 && girilenX+1<eksenX)
+        {
+            sag=tarla[girilenY][girilenX+1].equals("*");
+            if(sag)
+                cevreMayin++;
+        }
+        if(girilenY-1>=0 && girilenX-1>=0 && girilenY-1<eksenY && girilenX-1<eksenX)
+        {
+            solUC=mayin[girilenY-1][girilenX-1].equals("*");
+            if(solUC)
+                cevreMayin++;
+        }
+
+        if(girilenY-1>=0 && girilenX+1>=0 && girilenY-1<eksenY && girilenX+1<eksenX)
+        {
+            sagUC=mayin[girilenY-1][girilenX+1].equals("*");
+            if(sagUC)
+                cevreMayin++;
+        }
+
+        if(girilenY+1>=0 && girilenX-1>=0 && girilenY+1<eksenY && girilenX-1<eksenX)
+        {
+            solAC=mayin[girilenY+1][girilenX-1].equals("*");
+            if(solAC)
+                cevreMayin++;
+        }
+
+        if(girilenY+1>=0 && girilenX+1>=0 && girilenY+1<eksenY && girilenX+1<eksenX)
+        {
+            sagAC=mayin[girilenY+1][girilenX+1].equals("*");
+            if(sagAC)
+                cevreMayin++;
+        }
+        return String.valueOf(cevreMayin);
+    }
 }
-
-
